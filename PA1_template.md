@@ -9,7 +9,6 @@ data <-read.csv ("activity/activity.csv")
 data$date <- as.Date(data$date)
 ```
 
-
 ## What is mean total number of steps taken per day?
 
 ```r
@@ -30,48 +29,48 @@ library(dplyr)
 ```
 
 ```r
-data_total_steps <- summarise(group_by(data, date),total_steps=sum(steps,na.rm=FALSE))
-hist(data_total_steps$total_steps)
+steps_taken_per_day <- summarise(group_by(data, date),total_steps=sum(steps,na.rm=TRUE))
+hist(steps_taken_per_day$total_steps,main='Total number of steps taken per day',xlab='Steps per day',col='red')
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 
 ```r
-mean(data_total_steps$total_steps,na.rm=TRUE)
+mean(steps_taken_per_day$total_steps,na.rm=TRUE)
 ```
 
 ```
-## [1] 10766.19
+## [1] 9354.23
 ```
 
 ```r
-median(data_total_steps$total_steps,na.rm=TRUE)
+median(steps_taken_per_day$total_steps,na.rm=TRUE)
 ```
 
 ```
-## [1] 10765
+## [1] 10395
 ```
 ## What is the average daily activity pattern?
 
 ```r
-data_mean_intervals <- summarise(group_by(data, interval),mean_interval=mean(steps,na.rm=TRUE))
-        with(data_mean_intervals,plot(interval,mean_interval,type = "l"))
+average_steps_per_interval <- summarise(group_by(data,interval),average_per_interval=mean(steps,na.rm=TRUE))
+with(average_steps_per_interval,plot(interval,average_per_interval,type = "l",main='Average number of steps taken per interval',xlab='Interval',ylab='Average number of steps',col='blue'))
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
 
 ```r
-        with(data_mean_intervals,interval[which.max(mean_interval)])
+with(average_steps_per_interval,interval[which.max(average_per_interval)])
 ```
 
 ```
 ## [1] 835
 ```
 ## Imputing missing values
-Strategy: NA values will be replaced by the mean value already calculated for the Average Daily Activity Pattern
+Strategy: NA values will be replaced by the mean value with the mean for 5-minute interval.
 
 ```r
-sum(is.na(data$steps))
+sum(is.na(data$steps)|is.na(data$date)|is.na(data$interval))
 ```
 
 ```
@@ -79,23 +78,7 @@ sum(is.na(data$steps))
 ```
 
 ```r
-sum(is.na(data$date))
-```
-
-```
-## [1] 0
-```
-
-```r
-sum(is.na(data$interval))
-```
-
-```
-## [1] 0
-```
-
-```r
-data_all <- inner_join(data,data_mean_intervals)
+data_all <- inner_join(data,average_steps_per_interval)
 ```
 
 ```
@@ -103,9 +86,10 @@ data_all <- inner_join(data,data_mean_intervals)
 ```
 
 ```r
-data_filled <- mutate(data_all,steps=ifelse(is.na(steps),mean_interval,steps))
-data_filled <- summarise(group_by(data, date),total_steps=sum(steps,na.rm=FALSE))
-hist(data_filled$total_steps)
+data_filled <- mutate(data_all,steps=ifelse(is.na(steps),average_per_interval,steps))
+data_filled <- select(data_filled,-average_per_interval)
+data_filled <- summarise(group_by(data_filled, date),total_steps=sum(steps,na.rm=TRUE))
+hist(data_filled$total_steps,main='Total number of steps taken per day',xlab='Steps per day',col='green')
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
@@ -123,18 +107,18 @@ median(data_filled$total_steps,na.rm=TRUE)
 ```
 
 ```
-## [1] 10765
+## [1] 10766.19
 ```
 ## Are there differences in activity patterns between weekdays and weekends?
 
 ```r
 library(lubridate)
-data<-mutate(data,day=as.factor(ifelse(wday(date) %in% c(1,7),"weekend","weekday")))
-data_day_interval<- summarise(group_by(data,day,interval), meansteps=mean(steps,na.rm=TRUE))
+data_weekly<-mutate(data,day=as.factor(ifelse(wday(date) %in% c(1,7),"weekend","weekday")))
+data_day_interval<- summarise(group_by(data_weekly,day,interval), average=mean(steps,na.rm=TRUE))
 library(lattice)
 with (data_day_interval, 
-      xyplot(meansteps ~ interval|day, type="l", 
-             ylab="Number of steps",layout=c(1,2)))
+      xyplot(average ~ interval|day, type="l", 
+             ylab="Number of steps",xlab='Interval',layout=c(1,2)))
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
