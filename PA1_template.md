@@ -41,8 +41,8 @@ hist(steps_taken_per_day$total_steps,main='Total number of steps taken per day',
 mean1 <- mean(steps_taken_per_day$total_steps,na.rm=TRUE);pmean1 <- formatC(mean1,format='d')
 median1 <- median(steps_taken_per_day$total_steps,na.rm=TRUE);pmedian1 <- formatC(median1,format='d')
 ```
-- The **mean** the total number of steps taken per day is **9354**. 
-- The **median** the total number of steps taken per dayis **10395**.
+- The **mean** total number of steps taken per day is **9354**. 
+- The **median** total number of steps taken per dayis **10395**.
 
 ## What is the average daily activity pattern?
 
